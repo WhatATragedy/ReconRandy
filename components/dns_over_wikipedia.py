@@ -22,7 +22,6 @@ class Dns_Over_Wikipedia:
                             'wikipedia_page': full_url,
                             'company_website': url
                         })
-                        self.logger.debug(f'{company_name} and  {url}...')
             else:
                 self.logger.debug(f'Error Processing {company_name}...')
         return self.company_names_and_urls
@@ -33,16 +32,16 @@ class Dns_Over_Wikipedia:
             page_info = json.loads(data.text)
             for page in page_info['query']['pages']:
                 page_data =  page_info['query']['pages'][page]
-                self.logger.debug(f"Page URL is {page_data['fullurl']}")
+                self.logger.debug(f"Url For {company_name} is {page_data['fullurl']}. Source Wiki")
                 return page_data['fullurl']
         else:
             self.logger.debug(f'Error When Requesting Wikipedia Info for {company_name}...')
             return None
             
-
     def perform_wiki_page_request(self, wikipedia_page):
         data = requests.get(wikipedia_page)
         urls = self.find_website_url_in_wiki_page(data.text)
+        #self.logger.debug(f"Urls Found on Page as {urls}")
         return urls
 
     def find_website_url_in_wiki_page(self, page_data):

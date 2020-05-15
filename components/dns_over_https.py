@@ -18,20 +18,21 @@ class Dns_Over_Https:
 
     def doh_query(self, domains: List[str], qtypes: List[str]=None):
         url = "https://cloudflare-dns.com/dns-query?name={}&type={}"
-        print(domains)
         domains = domains if isinstance(domains, list) else [domains]
         qtypes = qtypes if qtypes else ['A', 'AAAA']
         content_type = 'application/dns-json'
         headers = {"accept": content_type}
         urls = [url.format(domain, qtype) for domain in domains for qtype in qtypes]
-        for url in urls:
-            self.logger.debug(f'Request to CloudFlare DNS for {url}...')
-            req = self._Request(url, headers=headers)
-            content = self._urlopen(req).read().decode()
-            self.logger.debug(f'Response {content}...')
-            parsed = self.parse_response(json.loads(content))
-            if parsed is not None:
-                self.responses.extend(parsed)
+        for index, url in enumerate(urls):
+            self.logger.debug(f'Request to CloudFlare DNS for {index} in {len(urls)}')
+            try:
+                req = self._Request(url, headers=headers)
+                content = self._urlopen(req).read().decode()
+                parsed = self.parse_response(json.loads(content))
+                if parsed is not None:
+                    self.responses.extend(parsed)
+            except:
+                self.logger.debug(f'Issue Getting DNS for {url}')
         return self.responses
 
     def parse_response(self, response: str):

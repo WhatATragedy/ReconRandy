@@ -10,6 +10,10 @@ class certificate_logs:
     def perform_request(self, domain):
         if 'www.' in domain:
             domain = domain.replace('www.', '')
+        elif 'http://' in domain:
+            domain = domain.replace('http://', '')
+        elif 'https://' in domain:
+            domain = domain.replace('https://', '')
         domain = domain.lower()
         domain = "%.{}".format(domain)
         url_to_query = self.base_url.format(domain)
