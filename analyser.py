@@ -5,19 +5,50 @@ from components.duckduckgo import DuckDuckGo
 from objects.company import Company
 import json
 import logging 
+import pandas as pd
+import time
+import tqdm
+import os
 
-logging.basicConfig(level=logging.DEBUG,
+"""logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)-8s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S')"""
+logging.basicConfig(level=logging.CRITICAL,
                     format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%a, %d %b %Y %H:%M:%S')
 logger = logging.getLogger(__name__)
+df = pd.read_csv('dns_over_http/FTSE_100.txt')
+companies = df['Company_Name'].tolist()
+data = []
+#for company_name in tqdm.tqdm(companies):
+for index,company_name in enumerate(companies):
+    done = os.listdir('e:/Stuff/Code/dns_over_http/results/')
+    print(f'Processing {index} out of {len(companies)}')
+    if company_name not in done:
+        print(f'Company {company_name} not done...')
+        company_obj = Company(company_name)
+        company_obj.get_domain()
+        company_obj.get_crt_logs()
+        company_obj.get_dns_for_domains()
+        data.append({
+            'Company_Name': company_obj.company_name,
+            'Url': company_obj.domain,
+            'DNS': company_obj.domains_and_dns
+        })
+        ##check if file exists
+        
+        with open(f'e:/Stuff/Code/dns_over_http/results/{company_name}', 'w') as output_file:
+            temp_dict = {
+                'Company_Name': company_obj.company_name,
+                'Url': company_obj.domain,
+                'DNS': company_obj.domains_and_dns 
+            }
+            json.dump(temp_dict, output_file)
+        time.sleep(1)
+    else:
+        print(f'Company {company_name} already done...')
 
-companies_of_interest = ['bbc', 'nvidia', 'ocado']
-for company_name in companies_of_interest:
-    company_obj = Company(company_name)
-    company_obj.get_domain()
-    print(company_obj.domain)
-    print(company_obj.root_domain)
-    print(company_obj.get_crt_logs())
+output_df = pd.DataFrame(data)
 
 """
 crt_query = certificate_logs()
